@@ -117,19 +117,6 @@
       "bg": "data/bg/bg9.png"
     },
     {
-      "id": "img9",
-      "src": "data/photos/ariel 09.png",
-      "caption": "Description for Image 9",
-      "nextPixelRect": [
-        209,
-        115,
-        1001,
-        701
-      ],
-      "transitionFolder": "data/transitions/9",
-      "bg": "data/bg/bg9.png"
-    },
-    {
       "id": "img10",
       "src": "data/photos/ariel 10.jpg",
       "caption": "Description for Image 9",

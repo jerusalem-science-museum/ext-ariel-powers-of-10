@@ -104,7 +104,7 @@ def reverse_video(filename):
 
 
 if __name__ == "__main__":
-    # recorder = Recorder()
-    # recorder.run()
-    # reverse_video(recorder.filename)
-    reverse_video("video.mp4")
+    recorder = Recorder()
+    recorder.run()
+    reverse_video(recorder.filename)
+    # reverse_video("video.mp4")

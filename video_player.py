@@ -4,14 +4,13 @@ import numpy as np
 import os
 import subprocess
 import time
-import platform
 import json
 # Initialize Pygame
 pygame.init()
 
 # Screen setup
-
-screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+# Enable VSync to prevent tearing
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN, vsync=1)
 WIDTH, HEIGHT = screen.get_size()
 pygame.display.set_caption("Video Scrubber")
 
