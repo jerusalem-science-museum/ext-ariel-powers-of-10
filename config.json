@@ -91,10 +91,161 @@
       "bg": "data/bg/bg6.png"
     },
     {
-      "id": "img7",
+      "id": "img8",
       "src": "data/photos/ariel 08.JPG",
-      "caption": "Description for Image 7",
-      "bg": "data/bg/bg7.png"
+      "caption": "Description for Image 8",
+      "nextPixelRect": [
+        1362,
+        1715,
+        175,
+        117
+      ],
+      "transitionFolder": "data/transitions/8",
+      "bg": "data/bg/bg8.png"
+    },
+    {
+      "id": "img9",
+      "src": "data/photos/ariel 09.png",
+      "caption": "Description for Image 9",
+      "nextPixelRect": [
+        209,
+        115,
+        1001,
+        701
+      ],
+      "transitionFolder": "data/transitions/9",
+      "bg": "data/bg/bg9.png"
+    },
+    {
+      "id": "img9",
+      "src": "data/photos/ariel 09.png",
+      "caption": "Description for Image 9",
+      "nextPixelRect": [
+        209,
+        115,
+        1001,
+        701
+      ],
+      "transitionFolder": "data/transitions/9",
+      "bg": "data/bg/bg9.png"
+    },
+    {
+      "id": "img10",
+      "src": "data/photos/ariel 10.jpg",
+      "caption": "Description for Image 9",
+      "nextPixelRect": [
+        1065,
+        1042,
+        2010,
+        1407
+      ],
+      "transitionFolder": "data/transitions/10",
+      "bg": "data/bg/bg10.png"
+    },
+    {
+      "id": "img11",
+      "src": "data/photos/ariel 11.JPG",
+      "caption": "Description for Image 11",
+      "nextPixelRect": [
+        1576,
+        1163,
+        1804,
+        1263
+      ],
+      "transitionFolder": "data/transitions/11",
+      "bg": "data/bg/bg11.png"
+    },
+    {
+      "id": "img12",
+      "src": "data/photos/ariel 12.JPG",
+      "caption": "Description for Image 12",
+      "nextPixelRect": [
+        1073,
+        1025,
+        3016,
+        2111
+      ],
+      "transitionFolder": "data/transitions/12",
+      "bg": "data/bg/bg12.png"
+    },
+    {
+      "id": "img13",
+      "src": "data/photos/ariel 13.png",
+      "caption": "Description for Image 13",
+      "nextPixelRect":  [
+        711,
+        508,
+        41,
+        28
+      ],
+      "transitionFolder": "data/transitions/13",
+      "bg": "data/bg/bg13.png"
+    },
+    {
+      "id": "img14",
+      "src": "data/photos/ariel 14.png",
+      "caption": "Description for Image 14",
+      "nextPixelRect": [
+        1859,
+        1068,
+        383,
+        269
+      ],
+      "transitionFolder": "data/transitions/14",
+      "bg": "data/bg/bg14.png"
+    },
+    {
+      "id": "img15",
+      "src": "data/photos/ariel 15.png",
+      "caption": "Description for Image 15",
+      "nextPixelRect": [
+        389,
+        370,
+        458,
+        321
+      ],
+      "transitionFolder": "data/transitions/15",
+      "bg": "data/bg/bg15.png"
+    },
+    {
+      "id": "img16",
+      "src": "data/photos/ariel 16.png",
+      "caption": "Description for Image 16",
+      "nextPixelRect": [
+        514,
+        647,
+        164,
+        115
+      ],
+      "transitionFolder": "data/transitions/16",
+      "bg": "data/bg/bg16.png"
+    },
+    {
+      "id": "img17",
+      "src": "data/photos/ariel 17.png",
+      "caption": "Description for Image 17",
+      "nextPixelRect": [
+        486,
+        518,
+        81,
+        57
+      ],
+      "transitionFolder": "data/transitions/17",
+      "bg": "data/bg/bg17.png"
+    },
+    {
+      "id": "img18",
+      "src": "data/photos/ariel 18.png",
+      "caption": "Description for Image 18",
+      "bg": "data/bg/bg18.png"
     }
-  ]
+  ],
+  
+  "videoPlayer": {
+    "videoPaths": {
+      "video": "video.mp4",
+      "reversedVideo": "video_reversed.mp4"
+    },
+    "playbackFPS": null
+  }
 }

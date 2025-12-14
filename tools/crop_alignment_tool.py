@@ -7,6 +7,7 @@ import sys
 import json
 import os
 from .precompute_transitions import process_transition_folder
+from tkinter import Tk, simpledialog, filedialog
 
 class CropAlignmentTool:
     """Interactive crop selection and alignment tool"""
@@ -610,32 +611,38 @@ def select_output_folder():
         return "morph_sequence"
 
 
-def select_existing_crop_json():
-    """Open file dialog to select existing crop alignment JSON"""
+def select_num_frames(default=16):
+    """Open dialog to select number of frames for morph sequence"""
     try:
-        from tkinter import Tk, filedialog
+        
         
         # Hide the main tkinter window
         root = Tk()
         root.withdraw()
         root.attributes('-topmost', True)
         
-        print("Select existing crop alignment JSON (or Cancel to create new crop)...")
-        json_file = filedialog.askopenfilename(
-            title="Select Existing Crop Alignment JSON (Cancel to create new)",
-            filetypes=[
-                ("JSON files", "*.json"),
-                ("All files", "*.*")
-            ]
+        print("Select number of frames for morph sequence...")
+        num_frames = simpledialog.askinteger(
+            title="Number of Frames",
+            prompt="Enter the number of frames for the morph sequence:",
+            initialvalue=default,
+            minvalue=1,
+            maxvalue=1000
         )
         
         root.destroy()
         
-        return json_file if json_file else None
+        if num_frames is None:
+            print(f"No value entered. Using default: {default} frames.")
+            return default
+        
+        return num_frames
         
     except ImportError:
-        print("Error: tkinter not available for file dialog")
-        return None
+        print("Error: tkinter not available for dialog")
+        print(f"Using default: {default} frames")
+        return default
+
 
 
 def apply_existing_crop(base_image_path, zoomed_image_path, crop_json_path):
@@ -800,7 +807,7 @@ def generate_morph_sequence_standalone(cropped_filename, zoomed_filename, output
     print(f"Using GMIC: {gmic_exe}\n")
     
     # GMIC command to create morph sequence
-    num_frames = 16
+    num_frames = select_num_frames(default=16)
     
     gmic_command = [
         gmic_exe,
@@ -873,21 +880,8 @@ def main():
     print(f"Base image:   {base_image_path}")
     print(f"Zoomed image: {zoomed_image_path}")
     print("="*60 + "\n")
-    
-    # Check if user wants to use existing crop JSON
-    existing_json = select_existing_crop_json()
-    
-    if existing_json and os.path.exists(existing_json):
-        # Apply existing crop and go straight to GMIC
-        success = apply_existing_crop(base_image_path, zoomed_image_path, existing_json)
-        if success:
-            print("Done!")
-        sys.exit(0 if success else 1)
-    else:
-        # Open interactive tool for manual cropping
-        print("No existing crop selected. Opening interactive crop tool...\n")
-        tool = CropAlignmentTool(base_image_path, zoomed_image_path)
-        tool.run()
+    tool = CropAlignmentTool(base_image_path, zoomed_image_path)
+    tool.run()
 
 
 if __name__ == "__main__":

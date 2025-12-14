@@ -2,19 +2,20 @@
 import pygame
 import numpy as np
 import cv2
-import viewer
+from src.viewer import ZoomViewer
 from tqdm import tqdm
 import subprocess
+import json
 
-class Recorder(viewer.ZoomViewer):
+class Recorder(ZoomViewer):
     """
     Runs the viewer and records the full zoom-in with transitions to a video file.
     """
     def __init__(self):
         super().__init__()
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.filename = 'transition2.mp4'
-        self.fps = 24
+        self.filename = 'video.mp4'
+        self.fps = 30
         self.video = cv2.VideoWriter(self.filename, fourcc, self.fps, self.screen.get_size())
         self.rate_of_slowness = 1.5  # Speed multiplier for zooming
 
@@ -49,25 +50,61 @@ class Recorder(viewer.ZoomViewer):
         self.video.release()
         
         print(f"Prerendered video with {frame_count} unique frames")
-    def reverse_video(self, filename=None):
-        if filename is None:
-            filename = self.filename
-        output_file = "output_reversed.mp4"
-        cmd = [
-            "ffmpeg", "-i", filename,
-            "-vf", "reverse",
-            "-c:v", "mpeg4",
-            "-profile:v", "0",
-            "-b:v", "5584k", 
-            "-pix_fmt", "yuv420p",
-            "-r", "24",
-            "-s", "1920x1080",
-            output_file
-        ]
-        subprocess.run(cmd, check=True)
+
+def reverse_video(filename):
+    output_file = "video_reversed.mp4"
+    
+    # Get original video properties using ffprobe
+    probe_cmd = [
+        "ffprobe", "-v", "error", "-select_streams", "v:0",
+        "-show_entries", "stream=bit_rate,width,height,r_frame_rate,pix_fmt",
+        "-of", "json", filename
+    ]
+    result = subprocess.run(probe_cmd, capture_output=True, text=True, check=True)
+    probe_data = json.loads(result.stdout)
+    stream = probe_data['streams'][0]
+    
+    # Extract properties
+    bitrate = stream.get('bit_rate', None)
+    width = stream.get('width')
+    height = stream.get('height')
+    r_frame_rate = stream.get('r_frame_rate', '30/1')  # Default to 30 fps
+    pix_fmt = stream.get('pix_fmt', 'yuv420p')
+    
+    # Parse frame rate (format: "30/1")
+    if '/' in r_frame_rate:
+        num, den = map(int, r_frame_rate.split('/'))
+        fps = num / den if den != 0 else 30
+    else:
+        fps = float(r_frame_rate)
+    
+    # Build command
+    cmd = [
+        "ffmpeg", "-i", filename,
+        "-vf", "reverse",
+        "-c:v", "mpeg4",  # Match mp4v FourCC used in run()
+        "-profile:v", "0",
+        "-pix_fmt", pix_fmt,
+        "-r", str(int(fps)),
+    ]
+    
+    # Add bitrate if available
+    if bitrate:
+        cmd.extend(["-b:v", bitrate])
+    
+    # Add resolution
+    if width and height:
+        cmd.extend(["-s", f"{width}x{height}"])
+    
+    # Add output file
+    cmd.append("-y")  # Overwrite output
+    cmd.append(output_file)
+    
+    subprocess.run(cmd, check=True)
 
 
 if __name__ == "__main__":
-    recorder = Recorder()
-    recorder.run()
-    recorder.reverse_video()
+    # recorder = Recorder()
+    # recorder.run()
+    # reverse_video(recorder.filename)
+    reverse_video("video.mp4")

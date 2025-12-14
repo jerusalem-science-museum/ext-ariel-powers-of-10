@@ -5,7 +5,7 @@ import os
 import subprocess
 import time
 import platform
-
+import json
 # Initialize Pygame
 pygame.init()
 
@@ -15,9 +15,13 @@ screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 WIDTH, HEIGHT = screen.get_size()
 pygame.display.set_caption("Video Scrubber")
 
+# Load config
+with open('config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
+
 # Video paths
-video_path = "sample transitions/2.mp4"
-reversed_video_path = "sample transitions/2r.mp4"
+video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['video'])
+reversed_video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['reversedVideo'])
 
 # Create reversed video if it doesn't exist
 if not os.path.exists(reversed_video_path):
@@ -54,9 +58,17 @@ fps = cap_forward.get(cv2.CAP_PROP_FPS)
 total_frames = int(cap_forward.get(cv2.CAP_PROP_FRAME_COUNT))
 total_frames_backward = int(cap_backward.get(cv2.CAP_PROP_FRAME_COUNT))
 
+# Get playback FPS from config (if null, use video's native FPS)
+playback_fps = config.get('videoPlayer', {}).get('playbackFPS')
+if playback_fps is None:
+    playback_fps = fps
+else:
+    playback_fps = float(playback_fps)
+
 print(f"Video properties:")
-print(f"  Forward: {total_frames} frames @ {fps} FPS")
+print(f"  Forward: {total_frames} frames @ {fps} FPS (native)")
 print(f"  Backward: {total_frames_backward} frames")
+print(f"  Playback: {playback_fps} FPS")
 if total_frames != total_frames_backward:
     print(f"  ⚠ WARNING: Frame count mismatch!")
 if total_frames <= 0:
@@ -71,6 +83,9 @@ last_frame = None
 # Playback state
 is_playing_forward = False
 is_playing_backward = False
+
+# UI state
+show_overlay = False  # Toggle with 'd' key (shows all info including instructions)
 
 # Performance tracking
 timing_log = []
@@ -159,6 +174,10 @@ while running:
                     print(f"\n▼ DOWN pressed: {timing['total_ms']:.2f}ms total")
                     print(f"  - Seek to backward frame {backward_frame}: {timing['stages']['seek']:.2f}ms")
                     print(f"  - Read frame: {timing['stages']['read_frame']:.2f}ms")
+            elif event.key == pygame.K_d:
+                # Toggle overlay display
+                show_overlay = not show_overlay
+                print(f"Overlay: {'ON' if show_overlay else 'OFF'}")
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 is_playing_forward = False
@@ -213,28 +232,48 @@ while running:
     else:
         screen.fill((0, 0, 0))
     
-    # Display info overlay
-    font = pygame.font.Font(None, 36)
-    
-    current_time = current_frame / fps if fps > 0 else 0
-    total_time = total_frames / fps if fps > 0 else 0
-    
-    # Semi-transparent background for text
-    info_bg = pygame.Surface((WIDTH, 100))
-    info_bg.set_alpha(128)
-    info_bg.fill((0, 0, 0))
-    screen.blit(info_bg, (0, 0))
-    
-    info_text = font.render(f"Time: {current_time:.1f}s / {total_time:.1f}s", True, (255, 255, 255))
-    frame_text = font.render(f"Frame: {current_frame}/{total_frames}", True, (255, 255, 255))
-    controls_text = font.render("UP: Play Forward | DOWN: Play Backward (hold)", True, (255, 255, 255))
-    
-    screen.blit(info_text, (10, 10))
-    screen.blit(frame_text, (10, 40))
-    screen.blit(controls_text, (10, 70))
+    # Display info overlay (only if show_overlay is True)
+    if show_overlay:
+        font = pygame.font.Font(None, 36)
+        
+        current_time = current_frame / fps if fps > 0 else 0
+        total_time = total_frames / fps if fps > 0 else 0
+        
+        # Show FPS info if playback FPS differs from native FPS
+        show_fps_info = abs(playback_fps - fps) > 0.1
+        
+        # Calculate background height based on what we're showing
+        lines_to_show = 2  # Time and Frame always shown
+        if show_fps_info:
+            lines_to_show += 1  # FPS line
+        lines_to_show += 1  # Instructions line
+        bg_height = 30 + (lines_to_show * 30)  # 10px padding top, 30px per line
+        
+        # Semi-transparent background for text
+        info_bg = pygame.Surface((WIDTH, bg_height))
+        info_bg.set_alpha(128)
+        info_bg.fill((0, 0, 0))
+        screen.blit(info_bg, (0, 0))
+        
+        info_text = font.render(f"Time: {current_time:.1f}s / {total_time:.1f}s", True, (255, 255, 255))
+        frame_text = font.render(f"Frame: {current_frame}/{total_frames}", True, (255, 255, 255))
+        
+        y_offset = 10
+        screen.blit(info_text, (10, y_offset))
+        y_offset += 30
+        screen.blit(frame_text, (10, y_offset))
+        y_offset += 30
+        
+        if show_fps_info:
+            fps_text = font.render(f"FPS: {fps:.1f} (native) → {playback_fps:.1f} (playback)", True, (255, 255, 255))
+            screen.blit(fps_text, (10, y_offset))
+            y_offset += 30
+        
+        controls_text = font.render("UP: Play Forward | DOWN: Play Backward (hold)", True, (255, 255, 255))
+        screen.blit(controls_text, (10, y_offset))
     
     pygame.display.flip()
-    clock.tick(int(fps))  # Match video FPS
+    clock.tick(int(playback_fps))  # Use configurable playback FPS
 
 # Print performance summary before exit
 print("\n" + "="*60)

@@ -37,7 +37,7 @@ class Renderer:
         self.screen.blit(self.viewport, self.viewport_rect)
         
         # Draw instructions
-        self._draw_instructions()
+        # self._draw_instructions()
         
         # Update display
         pygame.display.flip()
