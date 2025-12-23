@@ -8,9 +8,10 @@ import os
 class TransitionManager:
     """Manages transition animations between images"""
     
-    def __init__(self, config, viewport_dims):
+    def __init__(self, config, viewport_dims, smoothing_enabled=True):
         self.config = config
         self.viewport_dims = viewport_dims
+        self.smoothing_enabled = smoothing_enabled
         
         # All transitions loaded at startup (indexed by source image)
         self.transitions = []  # List of frame lists
@@ -23,6 +24,7 @@ class TransitionManager:
         self.current_transition_frames = []  # Active transition being played
         self.transition_frame_index = 0
         self.transition_start_time = None
+        self.manual_elapsed_ms = 0
         self.transition_fps = 30
         self.transition_direction = None
     
@@ -71,7 +73,8 @@ class TransitionManager:
                        self.viewport_dims[1] / frame.get_height())
             new_size = (int(frame.get_width() * scale),
                        int(frame.get_height() * scale))
-            scaled_frame = pygame.transform.smoothscale(frame, new_size)
+            scale_fn = pygame.transform.smoothscale if self.smoothing_enabled else pygame.transform.scale
+            scaled_frame = scale_fn(frame, new_size)
             
             frames.append(scaled_frame)
         
@@ -91,9 +94,10 @@ class TransitionManager:
         self.is_transitioning = True
         self.transition_frame_index = 0
         self.transition_start_time = pygame.time.get_ticks()
+        self.manual_elapsed_ms = 0
         self.transition_direction = direction
     
-    def update(self):
+    def update(self, dt_ms=None):
         """
         Update transition animation and return completion status
         if no transition folder exists, will complete immediately.
@@ -101,8 +105,12 @@ class TransitionManager:
         if not self.is_transitioning:
             return False
         
-        current_time = pygame.time.get_ticks()
-        elapsed = current_time - self.transition_start_time
+        if dt_ms is None:
+            current_time = pygame.time.get_ticks()
+            elapsed = current_time - self.transition_start_time
+        else:
+            self.manual_elapsed_ms += dt_ms
+            elapsed = self.manual_elapsed_ms
         
         # Calculate which frame to show
         frame_duration = 1000 / self.transition_fps

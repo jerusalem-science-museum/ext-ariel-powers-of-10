@@ -14,7 +14,7 @@ from .input_handler import InputHandler
 class ZoomViewer:
     """Main application coordinator"""
     
-    def __init__(self):
+    def __init__(self, smoothing_enabled=True):
         pygame.init()
         
         # Display setup
@@ -43,10 +43,10 @@ class ZoomViewer:
             self.image_manager.get_current_image().max_scale
         )
         
-        self.transition_manager = TransitionManager(self.config, self.viewport_dims)
+        self.transition_manager = TransitionManager(self.config, self.viewport_dims, smoothing_enabled=smoothing_enabled)
         self.transition_manager.load_all_transitions()
         
-        self.renderer = Renderer(self.screen, self.viewport_dims, self.viewport_rect, self.font)
+        self.renderer = Renderer(self.screen, self.viewport_dims, self.viewport_rect, self.font, smoothing_enabled=smoothing_enabled)
         
         self.input_handler = InputHandler()
         
@@ -87,7 +87,7 @@ class ZoomViewer:
             # Can't transition - clamp scale to boundaries
             self.zoom_controller.clamp_scale()
     
-    def _update_state(self):
+    def _update_state(self, dt_ms=None):
         """Update zoom and transition state"""
         
         # Update zoom state and check boundaries
@@ -96,7 +96,7 @@ class ZoomViewer:
             self._handle_boundary_transition(boundary_direction)
         
         # Update transition animation
-        transition_complete = self.transition_manager.update()
+        transition_complete = self.transition_manager.update(dt_ms=dt_ms)
         if transition_complete:
             # Transition just finished - sync image manager to match transition manager position
             self.image_manager.set_image(self.transition_manager.transition_idx)
