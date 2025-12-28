@@ -11,96 +11,46 @@ class Recorder(ZoomViewer):
     """
     Runs the viewer and records the full zoom-in with transitions to a video file.
     """
-    def __init__(self, target_fps=24, output_filename='video.mp4', rate_of_slowness=1.5, disable_antialias=True):
-        smoothing_enabled = not disable_antialias
-        super().__init__(smoothing_enabled=smoothing_enabled)
-        self.filename = output_filename
-        self.fps = float(target_fps)
-        self.rate_of_slowness = rate_of_slowness  # Speed multiplier for zooming
-
-        self.transition_manager.transition_fps = self.fps
-
-        # Pipe frames directly to ffmpeg for H.264 encoding (no intermediate file)
-        width, height = self.screen.get_size()
-        self.ffmpeg_process = self._create_ffmpeg_pipe(self.filename, self.fps, width, height)
-
-    def _create_ffmpeg_pipe(self, filename, fps, width, height):
-        """Create an ffmpeg process that accepts raw video frames via stdin"""
-        cmd = [
-            'ffmpeg',
-            '-y',  # Overwrite output file
-            '-f', 'rawvideo',
-            '-vcodec', 'rawvideo',
-            '-s', f'{width}x{height}',
-            '-pix_fmt', 'bgr24',
-            '-r', str(fps),
-            '-i', '-',  # Read from stdin
-            '-an',  # No audio
-            '-c:v', 'libx264',
-            '-preset', 'medium',
-            '-crf', '18',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', '+faststart',
-            filename
-        ]
-        
-        process = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        print(f"Encoding directly to H.264 ({filename}) at {fps} fps")
-        return process
+    def __init__(self):
+        super().__init__()
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        self.filename = 'video.mp4'
+        self.fps = 30
+        self.video = cv2.VideoWriter(self.filename, fourcc, self.fps, self.screen.get_size())
+        self.rate_of_slowness = 1.5  # Speed multiplier for zooming
 
     def run(self):
 
         prev_array = None
         frame_count = 0
-        width, height = self.screen.get_size()
+        # Fixed time step per frame (1/fps seconds)
+        fixed_dt_ms = 1000.0 / self.fps
         with tqdm(total=len(self.image_manager.images), desc="image # being processed") as pbar:
-            while True:
-                # Fixed time step ensures constant motion regardless of render speed
-                dt_seconds = 1.0 / (self.fps * self.rate_of_slowness)
-                dt_ms = 1000.0 / self.fps
-
-                # Advance zoom while not in transition
+            while self.image_manager.current_index < len(self.image_manager.images) - 1:
+                # Process input
                 if not self.transition_manager.is_active():
-                    self.zoom_controller.zoom_continuous('in', dt_seconds)
+                    self.zoom_controller.zoom_continuous('in', 1/(self.fps*self.rate_of_slowness))
 
-                # Update state
-                transition_complete = self._update_state(dt_ms=dt_ms)
+                # Update state with fixed time step (ensures transitions advance by fixed amount per frame)
+                transition_complete = self._update_state(dt_ms=fixed_dt_ms)
                 
                 if transition_complete:
                     pbar.update(1)
                 # Render
                 self._render_frame()
                 
-                # Convert screen to BGR numpy array and write to ffmpeg stdin
-                frame_bgr = cv2.cvtColor(
-                    np.array(pygame.surfarray.pixels3d(self.screen).swapaxes(0, 1)), 
-                    cv2.COLOR_RGB2BGR
+                self.video.write(
+                    cv2.cvtColor(
+                        np.array(pygame.surfarray.pixels3d(self.screen).swapaxes(0, 1)), 
+                        cv2.COLOR_RGB2BGR
+                    )
                 )
-                self.ffmpeg_process.stdin.write(frame_bgr.tobytes())
-                frame_count += 1
-                
-                # Exit when we've reached the last image (after completing transition to it)
-                if self.image_manager.current_index >= len(self.image_manager.images) - 1:
-                    break
 
-        # Flush stdin buffer before closing to ensure ffmpeg receives all frames
-        self.ffmpeg_process.stdin.flush()
-        # Close stdin and wait for ffmpeg to finish
-        self.ffmpeg_process.stdin.close()
-        self.ffmpeg_process.wait()
+        self.video.release()
         
-        if self.ffmpeg_process.returncode != 0:
-            stderr = self.ffmpeg_process.stderr.read().decode()
-            raise RuntimeError(f"ffmpeg encoding failed: {stderr}")
-        
-        print(f"Prerendered video with {frame_count} frames: {self.filename}")
+        print(f"Prerendered video with {frame_count} unique frames")
 
-def reverse_video(filename, fps):
+def reverse_video(filename):
     output_file = "video_reversed.mp4"
     
     # Get original video properties using ffprobe
@@ -117,18 +67,24 @@ def reverse_video(filename, fps):
     bitrate = stream.get('bit_rate', None)
     width = stream.get('width')
     height = stream.get('height')
+    r_frame_rate = stream.get('r_frame_rate', '30/1')  # Default to 30 fps
     pix_fmt = stream.get('pix_fmt', 'yuv420p')
+    
+    # Parse frame rate (format: "30/1")
+    if '/' in r_frame_rate:
+        num, den = map(int, r_frame_rate.split('/'))
+        fps = num / den if den != 0 else 30
+    else:
+        fps = float(r_frame_rate)
     
     # Build command
     cmd = [
         "ffmpeg", "-i", filename,
         "-vf", "reverse",
-        "-c:v", "libx264",
-        "-preset", "medium",
-        "-crf", "18",
+        "-c:v", "mpeg4",  # Match mp4v FourCC used in run()
+        "-profile:v", "0",
         "-pix_fmt", pix_fmt,
         "-r", str(int(fps)),
-        "-movflags", "+faststart",
     ]
     
     # Add bitrate if available
@@ -147,7 +103,7 @@ def reverse_video(filename, fps):
 
 
 if __name__ == "__main__":
-    recorder = Recorder(target_fps=24, output_filename='video.mp4', rate_of_slowness=1.5, disable_antialias=False)
+    recorder = Recorder()
     recorder.run()
-    reverse_video(recorder.filename, fps=recorder.fps)
-    # reverse_video("video.mp4", fps=24)
+    # reverse_video(recorder.filename)
+    reverse_video("video.mp4")

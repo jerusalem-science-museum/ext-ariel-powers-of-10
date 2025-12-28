@@ -20,9 +20,12 @@ class Renderer:
         """Draw the complete frame"""
         current_img = image_manager.get_current_image()
         
+        # Get background (may change during transitions)
+        bg = transition_manager.get_current_background(current_img.bg)
+        
         # Fill background
         self.screen.fill((17, 17, 17))
-        self.screen.blit(current_img.bg, (0, 0))
+        self.screen.blit(bg, (0, 0))
         
         # Draw either transition or normal image
         if transition_manager.is_active():

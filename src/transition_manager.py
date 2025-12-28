@@ -32,6 +32,8 @@ class TransitionManager:
         self.current_cached_frame = None  # Cached pygame surface for current video frame
         self.video_ended = False  # Track if video has ended (for video transitions)
         self.transition_frame_index = 0  # Only used for PNG-based transitions
+        self.current_video_frame_index = 0  # Track current frame number for video transitions
+        self.target_video_frame_index = None  # Target frame position for time-based video seeking
         self.transition_start_time = None
         self.manual_elapsed_ms = 0
         self.transition_fps = 30
@@ -176,6 +178,8 @@ class TransitionManager:
         self.current_cached_frame = None
         self.is_transitioning = True
         self.transition_frame_index = 0
+        self.current_video_frame_index = 0
+        self.target_video_frame_index = None
         self.transition_start_time = pygame.time.get_ticks()
         self.manual_elapsed_ms = 0
         self.transition_direction = direction
@@ -183,17 +187,17 @@ class TransitionManager:
     def update(self, dt_ms=None):
         """
         Update transition animation and return completion status
-        For video transitions, completion is determined by video_ended flag.
+        For video transitions:
+        - If dt_ms is provided: uses time-based frame calculation and seeking
+        - If dt_ms is None: uses real-time sequential frame reading
+        Completion is determined by video_ended flag or calculated frame exceeding frame count.
         For PNG transitions, completion is determined by frame count.
         """
         if not self.is_transitioning:
             return False
         
-        # For video transitions, invalidate cache so we read next frame
+        # For video transitions
         if isinstance(self.current_transition_data, dict) and self.current_transition_data.get('type') == 'video':
-            # Invalidate cache at start of each update cycle to read next frame
-            self.current_cached_frame = None
-            
             if self.video_ended:
                 # Transition complete - move position
                 self.is_transitioning = False
@@ -206,6 +210,44 @@ class TransitionManager:
                 else:  # 'backward'
                     self.transition_idx -= 1
                 return True
+            
+            # Time-based video playback (when dt_ms is provided)
+            if dt_ms is not None:
+                # Track elapsed time
+                self.manual_elapsed_ms += dt_ms
+                elapsed_seconds = self.manual_elapsed_ms / 1000.0
+                
+                # Calculate target frame position based on video fps
+                video_fps = self.current_transition_data.get('fps', 30)
+                target_frame = int(elapsed_seconds * video_fps)
+                frame_count = self.current_transition_data.get('frame_count', 0)
+                
+                # Clamp to valid range
+                if target_frame >= frame_count:
+                    # Transition complete - mark as ended
+                    self.video_ended = True
+                    self.is_transitioning = False
+                    if self.current_video_cap is not None:
+                        self.current_video_cap.release()
+                        self.current_video_cap = None
+                    self.current_cached_frame = None
+                    if self.transition_direction == 'forward':
+                        self.transition_idx += 1
+                    else:  # 'backward'
+                        self.transition_idx -= 1
+                    return True
+                
+                # Set target frame index (will be used by get_current_frame to seek)
+                # For reversed videos, we're already playing a reversed video file, so frame index is forward
+                self.target_video_frame_index = target_frame
+                self.current_video_frame_index = target_frame  # Update immediately for background changes
+                
+                # Invalidate cache so get_current_frame will seek to the new position
+                self.current_cached_frame = None
+            else:
+                # Real-time playback (no dt_ms provided) - invalidate cache to read next frame
+                self.current_cached_frame = None
+            
             return False
         
         # For PNG-based transitions, use frame index calculation
@@ -240,13 +282,15 @@ class TransitionManager:
     
     def get_current_frame(self):
         """Get the current transition frame (pygame surface)
-        For video transitions, reads frames sequentially from video stream.
+        For video transitions:
+        - If time-based (dt_ms provided in update()): seeks to calculated frame position
+        - If real-time (no dt_ms): reads frames sequentially from video stream
         For PNG transitions, returns frame by index.
         """
         if not self.is_transitioning or self.current_transition_data is None:
             return None
         
-        # Handle video-based transitions - read sequentially
+        # Handle video-based transitions
         if isinstance(self.current_transition_data, dict) and self.current_transition_data.get('type') == 'video':
             if self.current_video_cap is None or self.video_ended:
                 return None
@@ -255,14 +299,32 @@ class TransitionManager:
             if self.current_cached_frame is not None:
                 return self.current_cached_frame
             
-            # Read next frame from video stream (sequential read, no seeking needed)
-            # If using reversed video, it's already reversed so just read forward
-            ret, frame_bgr = self.current_video_cap.read()
-            
-            if not ret:
-                # Video has ended
-                self.video_ended = True
-                return None
+            # Time-based seeking (when target_video_frame_index is set)
+            if self.target_video_frame_index is not None:
+                # Seek to the target frame position
+                self.current_video_cap.set(cv2.CAP_PROP_POS_FRAMES, self.target_video_frame_index)
+                ret, frame_bgr = self.current_video_cap.read()
+                
+                if not ret:
+                    # Video has ended or frame doesn't exist
+                    self.video_ended = True
+                    return None
+                
+                # Clear target (already seeked)
+                self.target_video_frame_index = None
+            else:
+                # Real-time sequential playback (no dt_ms provided)
+                # Read next frame from video stream (sequential read, no seeking needed)
+                # If using reversed video, it's already reversed so just read forward
+                ret, frame_bgr = self.current_video_cap.read()
+                
+                if not ret:
+                    # Video has ended
+                    self.video_ended = True
+                    return None
+                
+                # Increment video frame index for sequential playback
+                self.current_video_frame_index += 1
             
             # Convert BGR to RGB
             frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
@@ -278,7 +340,7 @@ class TransitionManager:
             scale_fn = pygame.transform.smoothscale if self.smoothing_enabled else pygame.transform.scale
             scaled_frame = scale_fn(frame_surface, new_size)
             
-            # Cache the frame (will be invalidated when we read next frame)
+            # Cache the frame (will be invalidated when we need a new frame)
             self.current_cached_frame = scaled_frame
             return scaled_frame
         
@@ -291,3 +353,40 @@ class TransitionManager:
     def is_active(self):
         """Check if transition is currently playing"""
         return self.is_transitioning
+    
+    def get_current_background(self, current_img_bg):
+        """Get background for current transition frame, loading on-demand from config"""
+        if not self.is_transitioning:
+            return current_img_bg
+        
+        # Get image config for this transition
+        if self.transition_direction == 'forward':
+            img_idx = self.transition_idx
+        else:
+            img_idx = self.transition_idx - 1
+        
+        bg_changes = self.config['images'][img_idx].get('transitionBackgroundChanges')
+        if not bg_changes:
+            return current_img_bg
+        
+        # Get current frame number (in forward direction)
+        if isinstance(self.current_transition_data, dict) and self.current_transition_data.get('type') == 'video':
+            current_frame = self.current_video_frame_index
+        else:
+            current_frame = self.transition_frame_index
+            if self.transition_direction == 'backward':
+                frame_count = len(self.current_transition_frames) if self.current_transition_frames else 0
+                current_frame = frame_count - 1 - current_frame
+        
+        # Find matching background and load on-demand
+        active_frame = -1
+        for change in bg_changes:
+            if change['frame'] <= current_frame and change['frame'] > active_frame:
+                active_frame = change['frame']
+        
+        if active_frame >= 0:
+            bg_path = next(c['bg'] for c in bg_changes if c['frame'] == active_frame)
+            if os.path.exists(bg_path):
+                return pygame.image.load(bg_path).convert_alpha()
+        
+        return current_img_bg

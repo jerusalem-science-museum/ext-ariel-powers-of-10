@@ -112,7 +112,13 @@
         163
       ],
       "transitionFolder": "data/transitions/6",
-      "bg": "data/bg/bg6crop.png"
+      "bg": "data/bg/bg6crop.png",
+      "transitionBackgroundChanges": [
+        {"frame": 110, "bg": "data/bg/bg7.png"},
+        {"frame": 215, "bg": "data/bg/bg8.png"},
+        {"frame": 292, "bg": "data/bg/bg9.png"},
+        {"frame": 350, "bg": "data/bg/bg10.png"}
+      ]
     },
     {
       "id": "img8",
@@ -126,19 +132,6 @@
       ],
       "transitionFolder": "data/transitions/8",
       "bg": "data/bg/bg8.png"
-    },
-    {
-      "id": "img9",
-      "src": "data/photos/ariel 09.png",
-      "caption": "Description for Image 9",
-      "nextPixelRect": [
-        209,
-        115,
-        1001,
-        701
-      ],
-      "transitionFolder": "data/transitions/9",
-      "bg": "data/bg/bg9.png"
     },
     {
       "id": "img9",
