@@ -88,6 +88,8 @@ class Recorder(ZoomViewer):
                 if self.image_manager.current_index >= len(self.image_manager.images) - 1:
                     break
 
+        # Flush stdin buffer before closing to ensure ffmpeg receives all frames
+        self.ffmpeg_process.stdin.flush()
         # Close stdin and wait for ffmpeg to finish
         self.ffmpeg_process.stdin.close()
         self.ffmpeg_process.wait()

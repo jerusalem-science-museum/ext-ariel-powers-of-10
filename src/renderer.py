@@ -26,7 +26,14 @@ class Renderer:
         
         # Draw either transition or normal image
         if transition_manager.is_active():
-            self._draw_transition(transition_manager)
+            frame_drawn = self._draw_transition(transition_manager)
+            # Fall back to normal image if transition has no frame available
+            if not frame_drawn:
+                rect = image_manager.get_rect(current_img)
+                if rect:
+                    self._draw_zoomed_image(current_img, rect, zoom_controller)
+                else:
+                    self._draw_centered_image(current_img)
         else:
             rect = image_manager.get_rect(current_img)
             if rect:
@@ -44,15 +51,15 @@ class Renderer:
         pygame.display.flip()
     
     def _draw_transition(self, transition_manager):
-        """Draw transition frame"""
+        """Draw transition frame. Returns True if frame was drawn, False otherwise."""
         self.viewport.fill((0, 0, 0))
         frame = transition_manager.get_current_frame()
         if frame:
             x = (self.viewport_dims[0] - frame.get_width()) / 2
             y = (self.viewport_dims[1] - frame.get_height()) / 2
             self.viewport.blit(frame, (x, y))
-        else:
-            print("No frame to draw!")
+            return True
+        return False
     
     def _draw_centered_image(self, image_data):
         """Draw image centered in viewport"""
