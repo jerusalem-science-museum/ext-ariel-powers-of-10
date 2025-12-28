@@ -6,6 +6,7 @@ from src.viewer import ZoomViewer
 from tqdm import tqdm
 import subprocess
 import json
+import os
 
 class Recorder(ZoomViewer):
     """
@@ -20,25 +21,25 @@ class Recorder(ZoomViewer):
         self.rate_of_slowness = 1.5  # Speed multiplier for zooming
 
     def run(self):
-
-        prev_array = None
-        frame_count = 0
-        # Fixed time step per frame (1/fps seconds)
+        # Fixed time step per frame (1/fps seconds) - ensures transitions advance independently of rendering speed
         fixed_dt_ms = 1000.0 / self.fps
+        
         with tqdm(total=len(self.image_manager.images), desc="image # being processed") as pbar:
             while self.image_manager.current_index < len(self.image_manager.images) - 1:
                 # Process input
                 if not self.transition_manager.is_active():
                     self.zoom_controller.zoom_continuous('in', 1/(self.fps*self.rate_of_slowness))
 
-                # Update state with fixed time step (ensures transitions advance by fixed amount per frame)
+                # Update state with fixed time step (transitions advance by fixed amount per frame)
                 transition_complete = self._update_state(dt_ms=fixed_dt_ms)
                 
                 if transition_complete:
                     pbar.update(1)
+                    
                 # Render
                 self._render_frame()
                 
+                # Write frame to video
                 self.video.write(
                     cv2.cvtColor(
                         np.array(pygame.surfarray.pixels3d(self.screen).swapaxes(0, 1)), 
@@ -48,10 +49,16 @@ class Recorder(ZoomViewer):
 
         self.video.release()
         
-        print(f"Prerendered video with {frame_count} unique frames")
+        print(f"Video recording complete: {self.filename}")
 
 def reverse_video(filename):
     output_file = "video_reversed.mp4"
+    
+    # Check if input file exists
+    if not os.path.exists(filename):
+        print(f"Error: Video file '{filename}' not found.")
+        print("Please run the recorder first to create the video file.")
+        return
     
     # Get original video properties using ffprobe
     probe_cmd = [
@@ -105,5 +112,4 @@ def reverse_video(filename):
 if __name__ == "__main__":
     recorder = Recorder()
     recorder.run()
-    # reverse_video(recorder.filename)
-    reverse_video("video.mp4")
+    reverse_video(recorder.filename)
