@@ -23,7 +23,7 @@
         283
       ],
       "transitionFolder": "data/transitions/1"
-    },
+    },    
     {
       "id": "img2",
       "src": "data/photos/ariel 02.gif",
@@ -56,13 +56,25 @@
       "src": "data/photos/ariel 04.jpg",
       "caption": "Description for Image 4",
       "nextPixelRect": [
-        3591,
-        3700,
-        869,
-        609
+        2996,
+        3100,
+        2124,
+        1487
+      ],
+      "bg": "data/bg/bg4.png"
+    },    
+    {
+      "id": "img4crop",
+      "src": "data/photos/ariel 04 crop.png",
+      "caption": "Description for Image 4 crop",
+      "nextPixelRect": [
+        366,
+        299,
+        1278,
+        895
       ],
       "transitionFolder": "data/transitions/4",
-      "bg": "data/bg/bg4.png"
+      "bg": "data/bg/bg4crop.png"
     },
     {
       "id": "img5",
@@ -82,13 +94,25 @@
       "src": "data/photos/ariel 06.png",
       "caption": "solar system",
       "nextPixelRect": [
-        1201,
-        1059,
-        241,
-        168
+        390,
+        774,
+        1038,
+        727
+      ],
+      "bg": "data/bg/bg6.png"
+    },
+    {
+      "id": "img6crop",
+      "src": "data/photos/ariel 06 crop.png",
+      "caption": "solar system cropped",
+      "nextPixelRect": [
+        805,
+        287,
+        233,
+        163
       ],
       "transitionFolder": "data/transitions/6",
-      "bg": "data/bg/bg6.png"
+      "bg": "data/bg/bg6crop.png"
     },
     {
       "id": "img8",
@@ -102,6 +126,19 @@
       ],
       "transitionFolder": "data/transitions/8",
       "bg": "data/bg/bg8.png"
+    },
+    {
+      "id": "img9",
+      "src": "data/photos/ariel 09.png",
+      "caption": "Description for Image 9",
+      "nextPixelRect": [
+        209,
+        115,
+        1001,
+        701
+      ],
+      "transitionFolder": "data/transitions/9",
+      "bg": "data/bg/bg9.png"
     },
     {
       "id": "img9",
@@ -147,10 +184,10 @@
       "src": "data/photos/ariel 12.JPG",
       "caption": "Description for Image 12",
       "nextPixelRect": [
-        1073,
-        1025,
-        3016,
-        2111
+        1510,
+        1419,
+        2103,
+        1402
       ],
       "transitionFolder": "data/transitions/12",
       "bg": "data/bg/bg12.png"
@@ -219,12 +256,6 @@
       ],
       "transitionFolder": "data/transitions/17",
       "bg": "data/bg/bg17.png"
-    },
-    {
-      "id": "img18",
-      "src": "data/photos/ariel 18.png",
-      "caption": "Description for Image 18",
-      "bg": "data/bg/bg18.png"
     }
   ],
   
