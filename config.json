@@ -5,8 +5,8 @@
     978
     ],
   "viewportTL": [
-    51,
-    51
+    49,
+    52
     ]
   },
   "defaultOutlineColor": "#00ff88",
@@ -114,10 +114,11 @@
       "transitionFolder": "data/transitions/6",
       "bg": "data/bg/bg8.png",
       "transitionBackgroundChanges": [
-        {"frame": 110, "bg": "data/bg/bg9.png"},
-        {"frame": 215, "bg": "data/bg/bg10.png"},
-        {"frame": 292, "bg": "data/bg/bg11.png"},
-        {"frame": 350, "bg": "data/bg/bg12.png"}
+        {"frame": 0, "bg": "data/bg/bg9.png"},
+        {"frame": 110, "bg": "data/bg/bg10.png"},
+        {"frame": 215, "bg": "data/bg/bg11.png"},
+        {"frame": 292, "bg": "data/bg/bg12.png"},
+        {"frame": 350, "bg": "data/bg/bg13.png"}
       ]
     },
     
@@ -132,7 +133,7 @@
         117
       ],
       "transitionFolder": "data/transitions/8",
-      "bg": "data/bg/bg13.png"
+      "bg": "data/bg/bg14.png"
     },
     {
       "id": "img9",
@@ -145,7 +146,7 @@
         701
       ],
       "transitionFolder": "data/transitions/9",
-      "bg": "data/bg/bg14.png"
+      "bg": "data/bg/bg15.png"
     },
     {
       "id": "img10",
@@ -158,7 +159,7 @@
         1407
       ],
       "transitionFolder": "data/transitions/10",
-      "bg": "data/bg/bg15.png"
+      "bg": "data/bg/bg16.png"
     },
     {
       "id": "img11",
@@ -171,7 +172,7 @@
         1263
       ],
       "transitionFolder": "data/transitions/11",
-      "bg": "data/bg/bg16.png"
+      "bg": "data/bg/bg17.png"
     },
     {
       "id": "img12",
@@ -184,7 +185,7 @@
         1371
       ],
       "transitionFolder": "data/transitions/12",
-      "bg": "data/bg/bg17.png"
+      "bg": "data/bg/bg18.png"
     },
     {
       "id": "img13",
@@ -197,7 +198,7 @@
         71
       ],
       "transitionFolder": "data/transitions/13",
-      "bg": "data/bg/bg18.png"
+      "bg": "data/bg/bg19.png"
     },
     {
       "id": "img14",
@@ -210,7 +211,7 @@
         269
       ],
       "transitionFolder": "data/transitions/14",
-      "bg": "data/bg/bg19.png"
+      "bg": "data/bg/bg20.png"
     },
     {
       "id": "img15",
@@ -218,18 +219,21 @@
       "caption": "Description for Image 15",
       "nextPixelRect": [
         404,
-        374,
-        428,
+        380,
+        427,
         299
       ],
       "transitionFolder": "data/transitions/15",
-      "bg": "data/bg/bg20.png"
+      "bg": "data/bg/bg21.png",
+      "transitionBackgroundChanges": [
+        {"frame": 0, "bg": "data/bg/bg22.png"}
+      ]
     },
     {
       "id": "img16",
       "src": "data/photos/ariel 16.png",
       "caption": "Description for Image 16",
-      "bg": "data/bg/bg21.png"
+      "bg": "data/bg/bg23.png"
     }
   ],
   
