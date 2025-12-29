@@ -181,3 +181,5 @@ sample photos/.tile_cache/
 data/
 
 *.mp4
+build/
+output/

@@ -5,6 +5,11 @@ import os
 import subprocess
 import time
 import json
+
+# Enable vsync on Linux/X11 to prevent screen tearing
+# This must be set before pygame.init()
+os.environ['SDL_VIDEO_X11_VSYNC'] = '1'
+
 # Initialize Pygame
 pygame.init()
 
@@ -13,8 +18,8 @@ pygame.init()
 is_exe = True
 
 # Screen setup
-
-screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+# Use DOUBLEBUF flag for double buffering (works with vsync)
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN | pygame.DOUBLEBUF)
 WIDTH, HEIGHT = screen.get_size()
 pygame.display.set_caption("Video Scrubber")
 
