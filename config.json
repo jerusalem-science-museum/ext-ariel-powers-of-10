@@ -153,10 +153,10 @@
       "src": "data/photos/ariel 10.jpg",
       "caption": "Description for Image 9",
       "nextPixelRect": [
-        1065,
-        1042,
-        2010,
-        1407
+        1040,
+        945,
+        2003,
+        1402
       ],
       "transitionFolder": "data/transitions/10",
       "bg": "data/bg/bg16.png"

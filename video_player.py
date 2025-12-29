@@ -8,19 +8,29 @@ import json
 # Initialize Pygame
 pygame.init()
 
+# Toggle exe mode: if True, uses videos from same folder as script with native FPS
+# If False, loads videos from config.json
+is_exe = True
+
 # Screen setup
-# Enable VSync to prevent tearing
-screen = pygame.display.set_mode(flags=pygame.FULLSCREEN, vsync=1)
+
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 WIDTH, HEIGHT = screen.get_size()
 pygame.display.set_caption("Video Scrubber")
 
-# Load config
-with open('config.json', 'r', encoding='utf-8') as f:
-    config = json.load(f)
-
-# Video paths
-video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['video'])
-reversed_video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['reversedVideo'])
+# Load config and set video paths
+if is_exe:
+    print('Using files in same location as script')
+    # Video paths in same folder as script
+    video_path = "video.mp4"
+    reversed_video_path = "video_reversed.mp4"
+    config = {}  # Empty config for exe mode
+else:
+    with open('config.json', 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    # Video paths from config
+    video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['video'])
+    reversed_video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['reversedVideo'])
 
 # Create reversed video if it doesn't exist
 if not os.path.exists(reversed_video_path):
@@ -57,12 +67,15 @@ fps = cap_forward.get(cv2.CAP_PROP_FPS)
 total_frames = int(cap_forward.get(cv2.CAP_PROP_FRAME_COUNT))
 total_frames_backward = int(cap_backward.get(cv2.CAP_PROP_FRAME_COUNT))
 
-# Get playback FPS from config (if null, use video's native FPS)
-playback_fps = config.get('videoPlayer', {}).get('playbackFPS')
-if playback_fps is None:
-    playback_fps = fps
+# Get playback FPS from config (if null or exe mode, use video's native FPS)
+if is_exe:
+    playback_fps = fps  # Always use native FPS in exe mode
 else:
-    playback_fps = float(playback_fps)
+    playback_fps = config.get('videoPlayer', {}).get('playbackFPS')
+    if playback_fps is None:
+        playback_fps = fps
+    else:
+        playback_fps = float(playback_fps)
 
 print(f"Video properties:")
 print(f"  Forward: {total_frames} frames @ {fps} FPS (native)")
@@ -78,6 +91,15 @@ print()
 # Current playback position (in forward video frame numbers)
 current_frame = 0
 last_frame = None
+
+# Read the first frame immediately so it displays on startup
+cap_forward.set(cv2.CAP_PROP_POS_FRAMES, 0)
+ret, first_frame = cap_forward.read()
+if ret:
+    last_frame = first_frame
+    print("✓ First frame loaded")
+else:
+    print("⚠ WARNING: Could not read first frame")
 
 # Playback state
 is_playing_forward = False
