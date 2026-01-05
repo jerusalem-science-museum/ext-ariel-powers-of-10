@@ -7,9 +7,10 @@ import json
 # Load config and set video paths
 with open('config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
-video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['video'])
-reversed_video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['reversedVideo'])
-
+#video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['video'])
+#reversed_video_path = os.path.join('data', 'videos', config['videoPlayer']['videoPaths']['reversedVideo'])
+video_path = config['videoPlayer']['videoPaths']['video']
+reversed_video_path = config['videoPlayer']['videoPaths']['reversedVideo']
 # OpenCV video setup
 cap_forward = cv2.VideoCapture(video_path)
 cap_backward = cv2.VideoCapture(reversed_video_path)

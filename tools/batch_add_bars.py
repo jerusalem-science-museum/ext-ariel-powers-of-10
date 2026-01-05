@@ -7,8 +7,10 @@ from tkinter import filedialog, simpledialog, messagebox
 from PIL import Image
 from pathlib import Path
 import sys
+import json
 
-
+config = json.load(open('config.json','r'))
+dims = config['setup']['viewportDims']
 def add_bars_to_match_aspect(img: Image.Image, target_ratio: float, bg=(0, 0, 0)) -> Image.Image:
     """Add black bars to image to match target aspect ratio"""
     w, h = img.size
@@ -80,23 +82,13 @@ def get_target_aspect_ratio():
     root.attributes("-topmost", True)
     
     # Ask for width and height
-    width = simpledialog.askfloat(
-        "Target Aspect Ratio",
-        "Enter target width (e.g., 1920):",
-        initialvalue=1920.0,
-        minvalue=1.0
-    )
+    width = dims[0]
     
     if width is None:
         root.destroy()
         return None
     
-    height = simpledialog.askfloat(
-        "Target Aspect Ratio",
-        "Enter target height (e.g., 1080):",
-        initialvalue=1080.0,
-        minvalue=1.0
-    )
+    height = dims[1]
     
     root.destroy()
     

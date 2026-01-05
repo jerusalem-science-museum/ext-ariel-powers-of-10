@@ -1,2 +1,3 @@
-python ../tools/batch_add_bars.py
+cd ..
+python tools/batch_add_bars.py
 
