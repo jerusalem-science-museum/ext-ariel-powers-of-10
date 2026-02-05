@@ -6,16 +6,23 @@ import pygame
 import sys
 import json
 import os
-
+from .precompute_transitions import process_transition_folder
+from tkinter import Tk, simpledialog, filedialog
 
 class CropAlignmentTool:
     """Interactive crop selection and alignment tool"""
     
-    def __init__(self, base_image_path, zoomed_image_path):
+    def __init__(self, base_image_path, zoomed_image_path, config_path="config.json"):
         pygame.init()
+        self.config = json.load(open(config_path, 'r', encoding='utf-8'))
         
-        # Create temporary display to enable image loading
-        temp_screen = pygame.display.set_mode((100, 100))
+        # Store image paths
+        self.base_image_path = base_image_path
+        self.zoomed_image_path = zoomed_image_path
+        
+        # Window setup
+        self.screen = pygame.display.set_mode(self.config['setup']['viewportDims'])
+        pygame.display.set_caption("Crop Alignment Tool")
         
         # Load images
         self.base_image = pygame.image.load(base_image_path).convert()
@@ -23,12 +30,6 @@ class CropAlignmentTool:
         
         # Calculate aspect ratio from zoomed image
         self.aspect_ratio = self.zoomed_image.get_width() / self.zoomed_image.get_height()
-        
-        # Window setup
-        self.width = 1400
-        self.height = 900
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("Crop Alignment Tool")
         
         # Fonts
         self.font = pygame.font.SysFont('Arial', 14)
@@ -58,6 +59,7 @@ class CropAlignmentTool:
         
         # Clock
         self.clock = pygame.time.Clock()
+        
         
     def screen_to_image(self, screen_pos):
         """Convert screen coordinates to image coordinates"""
@@ -209,6 +211,8 @@ class CropAlignmentTool:
                     self.show_overlay = not self.show_overlay
                 elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                     self.save_crop()
+                    # Exit after saving (save_crop quits pygame)
+                    return False
                 elif event.key == pygame.K_c:
                     self.crop_rect = None
                 elif event.key == pygame.K_UP:
@@ -436,24 +440,45 @@ class CropAlignmentTool:
         # Close pygame window before selecting output folder
         pygame.quit()
         
-        # Select output folder for frames
+        # Select output folder for transition frames
+        print("\nSelect output folder for transition frames...")
         output_folder = select_output_folder()
         
         # Re-initialize pygame for saving images
         pygame.init()
         
-        # Create output data - simplified to [x, y, width, height]
-        output = [
-            int(self.crop_rect.x),
-            int(self.crop_rect.y),
-            int(self.crop_rect.width),
-            int(self.crop_rect.height)
-        ]
+        # Create output data in config.json format
+        # Convert output_folder to relative path if possible
+        try:
+            rel_output_folder = os.path.relpath(output_folder, os.getcwd())
+        except ValueError:
+            rel_output_folder = output_folder
+        
+        try:
+            rel_base_image = os.path.relpath(self.base_image_path, os.getcwd())
+        except ValueError:
+            rel_base_image = self.base_image_path
+        
+        output = {
+            "nextPixelRect": [
+                int(self.crop_rect.x),
+                int(self.crop_rect.y),
+                int(self.crop_rect.width),
+                int(self.crop_rect.height)
+            ],
+            "transitionFolder": rel_output_folder.replace("\\", "/"),  # Use forward slashes for JSON
+            "src": rel_base_image.replace("\\", "/"),  # Use forward slashes for JSON
+            # Additional fields to fill in manually:
+            # "id": "imgX",
+            # "caption": "Description for Image X",
+            # "bg": "data/bg/bgX.png",
+            # "outlineColor": "#00ff88"
+        }
         
         # Create output folder
         os.makedirs(output_folder, exist_ok=True)
         
-        # Save to JSON in output folder
+        # Save individual crop JSON in output folder
         output_file = os.path.join(output_folder, "crop_data.json")
         with open(output_file, 'w') as f:
             json.dump(output, f, indent=2)
@@ -462,7 +487,10 @@ class CropAlignmentTool:
         print("CROP SAVED!")
         print("="*60)
         print(f"Output file: {output_file}")
-        print(f"Crop region: ({output[0]}, {output[1]}) {output[2]}x{output[3]}")
+        print(f"Crop region: ({output['nextPixelRect'][0]}, {output['nextPixelRect'][1]}) {output['nextPixelRect'][2]}x{output['nextPixelRect'][3]}")
+        print(f"Transition folder: {output['transitionFolder']}")
+        print(f"Source image: {output['src']}")
+        print("\nThis JSON can be copied directly into config.json images array!")
         print("="*60 + "\n")
         
         # Save the cropped image
@@ -481,8 +509,17 @@ class CropAlignmentTool:
         
         # Generate morph sequence using GMIC
         generate_morph_sequence_standalone(cropped_filename, zoomed_filename, output_folder)
-    
 
+        # rescale transition frames to viewport dimensions
+        print("Rescaling transition frames to viewport dimensions...")
+        pygame.init()
+        pygame.display.set_mode((1,1))  # Minimal display to enable image operations
+        process_transition_folder(output_folder,
+                                  self.config['setup']['viewportDims'],
+                                  force=False)
+        
+        # Clean up pygame after processing
+        pygame.quit()
     
     def run(self):
         """Main loop"""
@@ -490,8 +527,9 @@ class CropAlignmentTool:
         
         while running:
             running = self.handle_events()
-            self.draw()
-            self.clock.tick(60)
+            if running:
+                self.draw()
+                self.clock.tick(60)
         
         # Only quit if we didn't save (save_crop calls pygame.quit())
         if pygame.get_init():
@@ -573,32 +611,38 @@ def select_output_folder():
         return "morph_sequence"
 
 
-def select_existing_crop_json():
-    """Open file dialog to select existing crop alignment JSON"""
+def select_num_frames(default=16):
+    """Open dialog to select number of frames for morph sequence"""
     try:
-        from tkinter import Tk, filedialog
+        
         
         # Hide the main tkinter window
         root = Tk()
         root.withdraw()
         root.attributes('-topmost', True)
         
-        print("Select existing crop alignment JSON (or Cancel to create new crop)...")
-        json_file = filedialog.askopenfilename(
-            title="Select Existing Crop Alignment JSON (Cancel to create new)",
-            filetypes=[
-                ("JSON files", "*.json"),
-                ("All files", "*.*")
-            ]
+        print("Select number of frames for morph sequence...")
+        num_frames = simpledialog.askinteger(
+            title="Number of Frames",
+            prompt="Enter the number of frames for the morph sequence:",
+            initialvalue=default,
+            minvalue=1,
+            maxvalue=1000
         )
         
         root.destroy()
         
-        return json_file if json_file else None
+        if num_frames is None:
+            print(f"No value entered. Using default: {default} frames.")
+            return default
+        
+        return num_frames
         
     except ImportError:
-        print("Error: tkinter not available for file dialog")
-        return None
+        print("Error: tkinter not available for dialog")
+        print(f"Using default: {default} frames")
+        return default
+
 
 
 def apply_existing_crop(base_image_path, zoomed_image_path, crop_json_path):
@@ -609,12 +653,23 @@ def apply_existing_crop(base_image_path, zoomed_image_path, crop_json_path):
         with open(crop_json_path, 'r') as f:
             crop_data = json.load(f)
         
-        # Support both formats: [x, y, w, h] or {"crop_region": {...}}
+        # Support multiple formats:
+        # 1. Old format: [x, y, w, h]
+        # 2. Old format: {"crop_region": {...}}
+        # 3. New config.json format: {"nextPixelRect": [x, y, w, h], ...}
         if isinstance(crop_data, list):
             x, y, width, height = crop_data
-        elif isinstance(crop_data, dict) and "crop_region" in crop_data:
-            cr = crop_data["crop_region"]
-            x, y, width, height = cr["x"], cr["y"], cr["width"], cr["height"]
+        elif isinstance(crop_data, dict):
+            if "nextPixelRect" in crop_data:
+                # New config.json format
+                x, y, width, height = crop_data["nextPixelRect"]
+            elif "crop_region" in crop_data:
+                # Old dict format
+                cr = crop_data["crop_region"]
+                x, y, width, height = cr["x"], cr["y"], cr["width"], cr["height"]
+            else:
+                print("Error: Invalid JSON format - expected 'nextPixelRect' or 'crop_region'")
+                return False
         else:
             print("Error: Invalid JSON format")
             return False
@@ -673,6 +728,27 @@ def apply_existing_crop(base_image_path, zoomed_image_path, crop_json_path):
         # Generate morph sequence directly
         generate_morph_sequence_standalone(cropped_filename, zoomed_filename, output_folder)
         
+        # Rescale transition frames to viewport dimensions
+        print("Rescaling transition frames to viewport dimensions...")
+        # Load config for viewport dimensions
+        try:
+            config_path = "config.json"
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                viewport_dims = config['setup']['viewportDims']
+            else:
+                print("Warning: config.json not found, skipping frame rescaling")
+                return True
+        except Exception as e:
+            print(f"Warning: Could not load config.json: {e}, skipping frame rescaling")
+            return True
+        
+        # Re-initialize pygame for image operations
+        pygame.init()
+        pygame.display.set_mode((1, 1))  # Minimal display to enable image operations
+        process_transition_folder(output_folder, viewport_dims, force=False)
+        
         return True
         
     except Exception as e:
@@ -705,10 +781,12 @@ def generate_morph_sequence_standalone(cropped_filename, zoomed_filename, output
     # Check common Windows installation locations
     if not gmic_exe:
         common_paths = [
+            r"./gmic.exe",
             r"C:\Program Files\gmic\gmic.exe",
             r"C:\Program Files (x86)\gmic\gmic.exe",
             os.path.expanduser(r"~\AppData\Local\gmic\gmic.exe"),
             r"C:\gmic\gmic.exe"
+
         ]
         for path in common_paths:
             if os.path.exists(path):
@@ -729,7 +807,7 @@ def generate_morph_sequence_standalone(cropped_filename, zoomed_filename, output
     print(f"Using GMIC: {gmic_exe}\n")
     
     # GMIC command to create morph sequence
-    num_frames = 16
+    num_frames = select_num_frames(default=16)
     
     gmic_command = [
         gmic_exe,
@@ -802,21 +880,8 @@ def main():
     print(f"Base image:   {base_image_path}")
     print(f"Zoomed image: {zoomed_image_path}")
     print("="*60 + "\n")
-    
-    # Check if user wants to use existing crop JSON
-    existing_json = select_existing_crop_json()
-    
-    if existing_json and os.path.exists(existing_json):
-        # Apply existing crop and go straight to GMIC
-        success = apply_existing_crop(base_image_path, zoomed_image_path, existing_json)
-        if success:
-            print("Done!")
-        sys.exit(0 if success else 1)
-    else:
-        # Open interactive tool for manual cropping
-        print("No existing crop selected. Opening interactive crop tool...\n")
-        tool = CropAlignmentTool(base_image_path, zoomed_image_path)
-        tool.run()
+    tool = CropAlignmentTool(base_image_path, zoomed_image_path)
+    tool.run()
 
 
 if __name__ == "__main__":

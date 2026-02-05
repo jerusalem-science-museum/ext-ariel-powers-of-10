@@ -178,3 +178,8 @@ pyrightconfig.json
 sample transitions/
 .vscode/
 sample photos/.tile_cache/
+data/
+
+*.mp4
+build/
+output/

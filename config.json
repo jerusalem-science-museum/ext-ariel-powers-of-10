@@ -1,53 +1,233 @@
 {
+  "setup": {
+  "viewportDims": [
+    1398,
+    978
+    ],
+  "viewportTL": [
+    49,
+    52
+    ]
+  },
   "defaultOutlineColor": "#00ff88",
   "images": [
     {
       "id": "img1",
-      "src": "sample photos/img1.jpg",
-      "bg": "sample bg/bg1.png",
+      "src": "data/photos/ariel 01.jpg",
+      "bg": "data/bg/bg1.png",
       "caption": "Description for Image 1",
       "nextPixelRect": [
-        1949,
-        1601,
-        360,
-        360
+        1958,
+        1395,
+        405,
+        283
       ],
-      "transitionFolder": "sample transitions/1"
-    },
+      "transitionFolder": "data/transitions/1"
+    },    
     {
       "id": "img2",
-      "src": "sample photos/img2.jpg",
+      "src": "data/photos/ariel 02.gif",
       "caption": "Description for Image 2",
       "nextPixelRect": [
-        2795,
-        3716,
-        340,
-        340
+        368,
+        251,
+        130,
+        91
       ],
-      "transitionFolder": "sample transitions/2",
-      "bg": "sample bg/bg2.png",
-      "outlineColor": "#ff0000ff"
+      "bg": "data/bg/bg2.png",
+      "outlineColor": "#ff0000ff",
+      "transitionFolder": "data/transitions/2"
     },
     {
       "id": "img3",
-      "nextPixelRect": [
-        144,
-        256,
-        62,
-        54
-      ],
-      "src": "sample photos/img3.png",
+      "src": "data/photos/ariel 03.jpg",
       "caption": "Description for Image 3",
-      "bg": "sample bg/bg3.png",
-      "outlineColor": "#000000ff",
-      "transitionFolder": "sample transitions/3"
+      "nextPixelRect": [
+        1930,
+        1548,
+        661,
+        463
+      ],
+      "transitionFolder": "data/transitions/3",
+      "bg": "data/bg/bg3.png"
     },
     {
       "id": "img4",
-      "src": "sample photos/img4.png",
+      "src": "data/photos/ariel 04.jpg",
       "caption": "Description for Image 4",
-      "bg": "sample bg/bg4.png",
-      "outlineColor": "#000000ff"
+      "nextPixelRect": [
+        2996,
+        3100,
+        2124,
+        1487
+      ],
+      "bg": "data/bg/bg4.png"
+    },    
+    {
+      "id": "img4crop",
+      "src": "data/photos/ariel 04 crop.png",
+      "caption": "Description for Image 4 crop",
+      "nextPixelRect": [
+        366,
+        299,
+        1278,
+        895
+      ],
+      "transitionFolder": "data/transitions/4",
+      "bg": "data/bg/bg5.png"
+    },
+    {
+      "id": "img5",
+      "src": "data/photos/ariel 05.jpg",
+      "caption": "greater solar area",
+      "nextPixelRect": [
+        804,
+        798,
+        150,
+        105
+      ],
+      "transitionFolder": "data/transitions/5",
+      "bg": "data/bg/bg6.png"
+    },
+    {
+      "id": "img6",
+      "src": "data/photos/ariel 06.png",
+      "caption": "solar system",
+      "nextPixelRect": [
+        390,
+        774,
+        1038,
+        727
+      ],
+      "bg": "data/bg/bg7.png"
+    },
+    {
+      "id": "img6crop",
+      "src": "data/photos/ariel 06 crop.png",
+      "caption": "solar system cropped",
+      "nextPixelRect": [
+        805,
+        287,
+        233,
+        163
+      ],
+      "transitionFolder": "data/transitions/6",
+      "bg": "data/bg/bg8.png",
+      "transitionBackgroundChanges": [
+        {"frame": 0, "bg": "data/bg/bg9.png"},
+        {"frame": 110, "bg": "data/bg/bg10.png"},
+        {"frame": 215, "bg": "data/bg/bg11.png"},
+        {"frame": 292, "bg": "data/bg/bg12.png"},
+        {"frame": 350, "bg": "data/bg/bg13.png"}
+      ]
+    },
+    
+    {
+      "id": "img8",
+      "src": "data/photos/ariel 08.JPG",
+      "caption": "Description for Image 8",
+      "nextPixelRect": [
+        1362,
+        1715,
+        175,
+        117
+      ],
+      "transitionFolder": "data/transitions/8",
+      "bg": "data/bg/bg14.png"
+    },
+    {
+      "id": "img9",
+      "src": "data/photos/ariel 09.png",
+      "caption": "Description for Image 9",
+      "nextPixelRect": [
+        233,
+        147,
+        904,
+        632
+      ],
+      "transitionFolder": "data/transitions/9",
+      "bg": "data/bg/bg15.png"
+    },
+    {
+      "id": "img10",
+      "src": "data/photos/ariel 10.jpg",
+      "caption": "Description for Image 9",
+      "nextPixelRect": [
+        475,
+        163,
+        566,
+        396
+      ],
+      "transitionFolder": "data/transitions/10",
+      "bg": "data/bg/bg16.png"
+    },
+    {
+      "id": "img11",
+      "src": "data/photos/ariel 11.jpg",
+      "caption": "Description for Image 11",
+      "nextPixelRect": [
+        320,
+        271,
+        231,
+        162
+      ],
+      "transitionFolder": "data/transitions/11",
+      "bg": "data/bg/bg17.png"
+    },
+    {
+      "id": "img12",
+      "src": "data/photos/ariel 12.jpg",
+      "caption": "Description for Image 12",
+      "nextPixelRect": [
+        375,
+        312,
+        604,
+        422
+      ],
+      "transitionFolder": "data/transitions/12",
+      "bg": "data/bg/bg18.png"
+    },
+    {
+      "id": "img13",
+      "src": "data/photos/ariel 13.jpg",
+      "caption": "Description for Image 13",
+      "nextPixelRect": [
+        298,
+        207,
+        286,
+        200
+      ],
+      "transitionFolder": "data/transitions/13",
+      "bg": "data/bg/bg19.png"
+    },
+    {
+      "id": "img14",
+      "src": "data/photos/ariel 14.png",
+      "caption": "Description for Image 14",
+      "nextPixelRect": [
+        633,
+        243,
+        358,
+        250
+      ],
+      "transitionFolder": "data/transitions/14",
+      "bg": "data/bg/bg20.png"
+    },
+    {
+      "id": "img15",
+      "src": "data/photos/ariel 15.png",
+      "caption": "Description for Image 15",
+      "bg": "data/bg/bg21.png"
     }
-  ]
+  ],
+  
+  "videoPlayer": {
+    "videoPaths": {
+      "video": "video.mp4",
+      "reversedVideo": "video_reversed.mp4"
+    },
+    "playbackFPS": null,
+    "idleTimeoutSeconds": 5,
+    "lastFrameSeconds": 10
+  }
 }

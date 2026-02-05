@@ -7,25 +7,36 @@ import pygame
 class Renderer:
     """Responsible for rendering images, transitions, and UI"""
     
-    def __init__(self, screen, viewport_dims, viewport_rect, font):
+    def __init__(self, screen, viewport_dims, viewport_rect, font, smoothing_enabled=True):
         self.screen = screen
         self.viewport_dims = viewport_dims
         self.viewport_rect = viewport_rect
         self.viewport = pygame.Surface(viewport_dims)
         self.font = font
         self.small_font = pygame.font.SysFont('Consolas', 12)
+        self.smoothing_enabled = smoothing_enabled
     
-    def draw_frame(self, image_manager, zoom_controller, transition_manager, fps=0, debug_mode=False, perf_stats=None, avg_frame_time=0):
+    def draw_frame(self, image_manager, zoom_controller, transition_manager):
         """Draw the complete frame"""
         current_img = image_manager.get_current_image()
         
+        # Get background (may change during transitions)
+        bg = transition_manager.get_current_background(current_img.bg)
+        
         # Fill background
         self.screen.fill((17, 17, 17))
-        self.screen.blit(current_img.bg, (0, 0))
+        self.screen.blit(bg, (0, 0))
         
         # Draw either transition or normal image
         if transition_manager.is_active():
-            self._draw_transition(transition_manager)
+            frame_drawn = self._draw_transition(transition_manager)
+            # Fall back to normal image if transition has no frame available
+            if not frame_drawn:
+                rect = image_manager.get_rect(current_img)
+                if rect:
+                    self._draw_zoomed_image(current_img, rect, zoom_controller)
+                else:
+                    self._draw_centered_image(current_img)
         else:
             rect = image_manager.get_rect(current_img)
             if rect:
@@ -37,21 +48,21 @@ class Renderer:
         self.screen.blit(self.viewport, self.viewport_rect)
         
         # Draw instructions
-        self._draw_instructions()
+        # self._draw_instructions()
         
         # Update display
         pygame.display.flip()
     
     def _draw_transition(self, transition_manager):
-        """Draw transition frame"""
+        """Draw transition frame. Returns True if frame was drawn, False otherwise."""
         self.viewport.fill((0, 0, 0))
         frame = transition_manager.get_current_frame()
         if frame:
             x = (self.viewport_dims[0] - frame.get_width()) / 2
             y = (self.viewport_dims[1] - frame.get_height()) / 2
             self.viewport.blit(frame, (x, y))
-        else:
-            print("No frame to draw!")
+            return True
+        return False
     
     def _draw_centered_image(self, image_data):
         """Draw image centered in viewport"""
@@ -125,7 +136,8 @@ class Renderer:
             # Low zoom: simple scaling
             target_width = max(1, int(img_surface.get_width() * scale))
             target_height = max(1, int(img_surface.get_height() * scale))
-            image_scaled = pygame.transform.smoothscale(img_surface, (target_width, target_height))
+            scale_fn = pygame.transform.smoothscale if self.smoothing_enabled else pygame.transform.scale
+            image_scaled = scale_fn(img_surface, (target_width, target_height))
             return image_scaled, image_pos_x, image_pos_y
         else:
             # High zoom: crop then scale for performance
@@ -159,7 +171,8 @@ class Renderer:
                 final_height = int(crop_height * original_scale_factor * scale)
                 
                 if final_width > 0 and final_height > 0:
-                    image_scaled = pygame.transform.smoothscale(cropped, (final_width, final_height))
+                    scale_fn = pygame.transform.smoothscale if self.smoothing_enabled else pygame.transform.scale
+                    image_scaled = scale_fn(cropped, (final_width, final_height))
                     adjusted_pos_x = image_pos_x + (crop_left * original_scale_factor * scale)
                     adjusted_pos_y = image_pos_y + (crop_top * original_scale_factor * scale)
                     return image_scaled, adjusted_pos_x, adjusted_pos_y
@@ -167,7 +180,8 @@ class Renderer:
             # Fallback
             target_width = max(1, int(img_surface.get_width() * scale))
             target_height = max(1, int(img_surface.get_height() * scale))
-            image_scaled = pygame.transform.smoothscale(img_surface, (target_width, target_height))
+            scale_fn = pygame.transform.smoothscale if self.smoothing_enabled else pygame.transform.scale
+            image_scaled = scale_fn(img_surface, (target_width, target_height))
             return image_scaled, image_pos_x, image_pos_y
     
     def _draw_instructions(self):

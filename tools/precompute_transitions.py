@@ -124,8 +124,8 @@ def ensure_scaled_frame(
 def process_transition_folder(
     folder: str,
     viewport: Tuple[int, int],
-    index: int,
     force: bool,
+    index: int = 0,
 ) -> Dict[str, int]:
     stats = {"frames": 0, "rescaled": 0, "skipped": 0, "moved": 0}
 
@@ -176,7 +176,7 @@ def main() -> int:
         folder = image_cfg.get("transitionFolder")
         if not folder:
             continue
-        stats = process_transition_folder(folder, viewport, idx, args.force)
+        stats = process_transition_folder(folder, viewport, args.force, idx)
         total_stats["folders"] += 1
         total_stats["frames"] += stats["frames"]
         total_stats["rescaled"] += stats["rescaled"]
