@@ -54,6 +54,7 @@ just_switched = False
 last_activity_time = pygame.time.get_ticks()
 idle_auto_playing = False
 idle_hold_until = 0  # when > 0, holding on end/start frame until this time (ms)
+idle_enabled = True  # when False, idle autoplay will not start
 
 # Main loop
 clock = pygame.time.Clock()
@@ -66,10 +67,12 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                # Reset idle timer and exit auto-zoom if active
-                last_activity_time = pygame.time.get_ticks()
+                # While key is held, disable idle autoplay from starting
+                idle_enabled = False
+                # Exit auto-zoom if active
                 if idle_auto_playing:
                     idle_auto_playing = False
+                    idle_hold_until = 0
                 # Always switch to forward, even if already playing forward
                 current_video = 'forward'
                 cap_forward.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
@@ -79,10 +82,12 @@ while running:
                 is_playing = True
                 just_switched = True
             elif event.key == pygame.K_DOWN:
-                # Reset idle timer and exit auto-zoom if active
-                last_activity_time = pygame.time.get_ticks()
+                # While key is held, disable idle autoplay from starting
+                idle_enabled = False
+                # Exit auto-zoom if active
                 if idle_auto_playing:
                     idle_auto_playing = False
+                    idle_hold_until = 0
                 # Always switch to backward, even if already playing backward
                 current_video = 'backward'
                 backward_frame = (total_frames - 1) - current_frame
@@ -103,16 +108,17 @@ while running:
                 # Only stop if we're still playing backward
                 if current_video == 'backward':
                     is_playing = False
-    
-    # If in autoplay, also exit when UP/DOWN is held (in case KEYDOWN was missed)
-    keys = pygame.key.get_pressed()
-    if idle_auto_playing and (keys[pygame.K_UP] or keys[pygame.K_DOWN]):
-        last_activity_time = pygame.time.get_ticks()
-        idle_auto_playing = False
-        idle_hold_until = 0
+            
+            # When the user releases UP or DOWN, treat that as the end of activity
+            if event.key in (pygame.K_UP, pygame.K_DOWN):
+                idle_enabled = True
+                last_activity_time = pygame.time.get_ticks()
+                if idle_auto_playing:
+                    idle_auto_playing = False
+                idle_hold_until = 0
     
     # Check for idle timeout and start auto-zoom
-    if not idle_auto_playing and idle_hold_until == 0 and (pygame.time.get_ticks() - last_activity_time) >= idle_timeout_ms:
+    if idle_enabled and not idle_auto_playing and idle_hold_until == 0 and (pygame.time.get_ticks() - last_activity_time) >= idle_timeout_ms:
         idle_auto_playing = True
         current_video = 'forward'
         cap_forward.set(cv2.CAP_PROP_POS_FRAMES, current_frame)

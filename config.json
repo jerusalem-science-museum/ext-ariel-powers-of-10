@@ -227,7 +227,7 @@
       "reversedVideo": "video_reversed.mp4"
     },
     "playbackFPS": null,
-    "idleTimeoutSeconds": 5,
+    "idleTimeoutSeconds": 2,
     "lastFrameSeconds": 10
   }
 }
