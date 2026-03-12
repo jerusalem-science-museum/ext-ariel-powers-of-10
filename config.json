@@ -1,12 +1,12 @@
 {
   "setup": {
-  "viewportDims": [
-    1398,
-    978
+    "viewportDims": [
+      1398,
+      978
     ],
-  "viewportTL": [
-    49,
-    52
+    "viewportTL": [
+      49,
+      52
     ]
   },
   "defaultOutlineColor": "#00ff88",
@@ -23,7 +23,7 @@
         283
       ],
       "transitionFolder": "data/transitions/1"
-    },    
+    },
     {
       "id": "img2",
       "src": "data/photos/ariel 02.gif",
@@ -62,7 +62,7 @@
         1487
       ],
       "bg": "data/bg/bg4.png"
-    },    
+    },
     {
       "id": "img4crop",
       "src": "data/photos/ariel 04 crop.png",
@@ -94,10 +94,10 @@
       "src": "data/photos/ariel 06.png",
       "caption": "solar system",
       "nextPixelRect": [
-        390,
-        774,
-        1038,
-        727
+        539,
+        571,
+        1645,
+        1152
       ],
       "bg": "data/bg/bg7.png"
     },
@@ -106,22 +106,36 @@
       "src": "data/photos/ariel 06 crop.png",
       "caption": "solar system cropped",
       "nextPixelRect": [
-        805,
-        287,
-        233,
-        163
+        581,
+        430,
+        419,
+        293
       ],
       "transitionFolder": "data/transitions/6",
       "bg": "data/bg/bg8.png",
       "transitionBackgroundChanges": [
-        {"frame": 0, "bg": "data/bg/bg9.png"},
-        {"frame": 110, "bg": "data/bg/bg10.png"},
-        {"frame": 215, "bg": "data/bg/bg11.png"},
-        {"frame": 292, "bg": "data/bg/bg12.png"},
-        {"frame": 350, "bg": "data/bg/bg13.png"}
+        {
+          "frame": 0,
+          "bg": "data/bg/bg9.png"
+        },
+        {
+          "frame": 110,
+          "bg": "data/bg/bg10.png"
+        },
+        {
+          "frame": 215,
+          "bg": "data/bg/bg11.png"
+        },
+        {
+          "frame": 292,
+          "bg": "data/bg/bg12.png"
+        },
+        {
+          "frame": 350,
+          "bg": "data/bg/bg13.png"
+        }
       ]
     },
-    
     {
       "id": "img8",
       "src": "data/photos/ariel 08.JPG",
@@ -220,7 +234,6 @@
       "bg": "data/bg/bg21.png"
     }
   ],
-  
   "videoPlayer": {
     "videoPaths": {
       "video": "video.mp4",

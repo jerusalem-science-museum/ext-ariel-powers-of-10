@@ -31,6 +31,9 @@ class InputHandler:
                         elif event.key == pygame.K_DOWN:
                             actions.append(('zoom_step', 'out'))
                     
+                    elif event.key == pygame.K_ESCAPE:
+                        actions.append(('quit', None))
+
                     elif event.key == pygame.K_d:
                         actions.append(('toggle_debug', None))
                 
