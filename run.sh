@@ -1,5 +1,5 @@
-#!/usr/bin bash
+#!/usr/bin/bash
 set -e
 cd "$(dirname "$0")"
-source venv/bin/activate
+source .venv/bin/activate
 python -m video_player

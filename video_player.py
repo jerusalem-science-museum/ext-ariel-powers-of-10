@@ -31,7 +31,7 @@ if total_frames <= 0:
 
 # Initialize Pygame
 pygame.init()
-screen = pygame.display.set_mode(flags=pygame.FULLSCREEN | pygame.DOUBLEBUF)
+screen = pygame.display.set_mode((1920,1080), pygame.FULLSCREEN | pygame.SCALED)
 WIDTH, HEIGHT = screen.get_size()
 pygame.display.set_caption("Video Scrubber")
 
