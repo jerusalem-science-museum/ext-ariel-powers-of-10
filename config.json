@@ -193,10 +193,10 @@
       "src": "data/photos/ariel 12.jpg",
       "caption": "Description for Image 12",
       "nextPixelRect": [
-        375,
-        312,
-        604,
-        422
+        273,
+        260,
+        671,
+        469
       ],
       "transitionFolder": "data/transitions/12",
       "bg": "data/bg/bg18.png"
