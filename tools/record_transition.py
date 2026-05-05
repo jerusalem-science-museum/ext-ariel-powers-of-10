@@ -68,10 +68,22 @@ class Recorder(ZoomViewer):
         
         return process
 
+    def _current_bg_path(self):
+        """Resolve the bg path active for the frame about to be written."""
+        path = self.transition_manager.get_active_bg_path()
+        if path:
+            return path
+        return self.image_manager.get_current_image().config.get('bg')
+
     def run(self):
         # Fixed time step per frame (1/fps seconds) - ensures transitions advance independently of rendering speed
         fixed_dt_ms = 1000.0 / self.fps
-        
+
+        bg_audio_map = self.config.get('bgAudio', {})
+        cues = []
+        last_bg_path = None
+        output_frame_idx = 0
+
         with tqdm(total=len(self.image_manager.images), desc="image # being processed") as pbar:
             while self.image_manager.current_index < len(self.image_manager.images) - 1:
                 # Process input
@@ -80,19 +92,29 @@ class Recorder(ZoomViewer):
 
                 # Update state with fixed time step (transitions advance by fixed amount per frame)
                 transition_complete = self._update_state(dt_ms=fixed_dt_ms)
-                
+
                 if transition_complete:
                     pbar.update(1)
-                    
+
                 # Render
                 self._render_frame()
-                
+
+                # Detect bg switch on this output frame
+                current_bg_path = self._current_bg_path()
+                if current_bg_path != last_bg_path:
+                    cues.append({
+                        "frame": output_frame_idx,
+                        "bg": current_bg_path,
+                        "audio": bg_audio_map.get(current_bg_path)
+                    })
+                    last_bg_path = current_bg_path
+
                 # Write frame to video (convert RGB to BGR for OpenCV/ffmpeg)
                 frame_bgr = cv2.cvtColor(
-                    np.array(pygame.surfarray.pixels3d(self.screen).swapaxes(0, 1)), 
+                    np.array(pygame.surfarray.pixels3d(self.screen).swapaxes(0, 1)),
                     cv2.COLOR_RGB2BGR
                 )
-                
+
                 # Write raw frame data to ffmpeg stdin
                 try:
                     self.ffmpeg_process.stdin.write(frame_bgr.tobytes())
@@ -105,12 +127,14 @@ class Recorder(ZoomViewer):
                     print(error_msg)
                     raise
 
+                output_frame_idx += 1
+
         # Close stdin to signal end of input
         self.ffmpeg_process.stdin.close()
-        
+
         # Wait for ffmpeg to finish encoding
         stdout, stderr = self.ffmpeg_process.communicate()
-        
+
         if self.ffmpeg_process.returncode != 0:
             print(f"Warning: ffmpeg exited with code {self.ffmpeg_process.returncode}")
             print("Error output:", stderr.decode('utf-8', errors='ignore'))
@@ -118,6 +142,16 @@ class Recorder(ZoomViewer):
             # Get file size for user info
             file_size_mb = os.path.getsize(self.filename) / (1024 * 1024)
             print(f"Video recording complete: {self.filename} ({file_size_mb:.2f} MB)")
+
+        # Write audio cue sidecar
+        cues_path = "video_audio_cues.json"
+        with open(cues_path, 'w', encoding='utf-8') as f:
+            json.dump({
+                "fps": self.fps,
+                "total_frames": output_frame_idx,
+                "cues": cues
+            }, f, indent=2)
+        print(f"Wrote {len(cues)} bg cues to {cues_path}")
 
 def reverse_video(filename):
     output_file = "video_reversed.mp4"
