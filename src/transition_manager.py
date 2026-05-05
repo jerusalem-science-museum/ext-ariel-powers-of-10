@@ -354,22 +354,21 @@ class TransitionManager:
         """Check if transition is currently playing"""
         return self.is_transitioning
     
-    def get_current_background(self, current_img_bg):
-        """Get background for current transition frame, loading on-demand from config"""
+    def get_active_bg_path(self):
+        """Return the bg path active during the current transition frame, or None if no
+        transitionBackgroundChanges entry currently applies."""
         if not self.is_transitioning:
-            return current_img_bg
-        
-        # Get image config for this transition
+            return None
+
         if self.transition_direction == 'forward':
             img_idx = self.transition_idx
         else:
             img_idx = self.transition_idx - 1
-        
+
         bg_changes = self.config['images'][img_idx].get('transitionBackgroundChanges')
         if not bg_changes:
-            return current_img_bg
-        
-        # Get current frame number (in forward direction)
+            return None
+
         if isinstance(self.current_transition_data, dict) and self.current_transition_data.get('type') == 'video':
             current_frame = self.current_video_frame_index
         else:
@@ -377,16 +376,18 @@ class TransitionManager:
             if self.transition_direction == 'backward':
                 frame_count = len(self.current_transition_frames) if self.current_transition_frames else 0
                 current_frame = frame_count - 1 - current_frame
-        
-        # Find matching background and load on-demand
+
         active_frame = -1
+        active_bg = None
         for change in bg_changes:
             if change['frame'] <= current_frame and change['frame'] > active_frame:
                 active_frame = change['frame']
-        
-        if active_frame >= 0:
-            bg_path = next(c['bg'] for c in bg_changes if c['frame'] == active_frame)
-            if os.path.exists(bg_path):
-                return pygame.image.load(bg_path).convert_alpha()
-        
+                active_bg = change['bg']
+        return active_bg
+
+    def get_current_background(self, current_img_bg):
+        """Get background for current transition frame, loading on-demand from config"""
+        bg_path = self.get_active_bg_path()
+        if bg_path and os.path.exists(bg_path):
+            return pygame.image.load(bg_path).convert_alpha()
         return current_img_bg
