@@ -240,7 +240,23 @@
     "data/bg/bg3.png": "data/audio/3.mp3",
     "data/bg/bg4.png": "data/audio/4.mp3",
     "data/bg/bg5.png": "data/audio/5.mp3",
-    "data/bg/bg6.png": "data/audio/6.mp3"
+    "data/bg/bg6.png": "data/audio/6.mp3",
+    "data/bg/bg7.png": "data/audio/7.mp3",
+    "data/bg/bg8.png": "data/audio/8.mp3",
+    "data/bg/bg9.png": "data/audio/9.mp3",
+    "data/bg/bg10.png": "data/audio/10.mp3",
+    "data/bg/bg11.png": "data/audio/11.mp3",
+    "data/bg/bg12.png": "data/audio/12.mp3",
+    "data/bg/bg13.png": "data/audio/13.mp3",
+    "data/bg/bg14.png": "data/audio/14.mp3",
+    "data/bg/bg15.png": "data/audio/15.mp3",
+    "data/bg/bg16.png": "data/audio/16.mp3",
+    "data/bg/bg17.png": "data/audio/17.mp3",
+    "data/bg/bg18.png": "data/audio/18.mp3",
+    "data/bg/bg19.png": "data/audio/19.mp3",
+    "data/bg/bg20.png": "data/audio/20.mp3",
+    "data/bg/bg21.png": "data/audio/21.mp3"
+    
   },
   "videoPlayer": {
     "videoPaths": {

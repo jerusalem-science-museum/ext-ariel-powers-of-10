@@ -3,7 +3,7 @@
   "total_frames": 2165,
   "cues": [
     {
-      "frame": 0,
+      "frame": 1,
       "bg": "data/bg/bg1.png",
       "audio": "data/audio/1.mp3"
     },
@@ -35,77 +35,77 @@
     {
       "frame": 813,
       "bg": "data/bg/bg7.png",
-      "audio": null
+      "audio": "data/audio/7.mp3"
     },
     {
       "frame": 864,
       "bg": "data/bg/bg8.png",
-      "audio": null
+      "audio": "data/audio/8.mp3"
     },
     {
       "frame": 959,
       "bg": "data/bg/bg9.png",
-      "audio": null
+      "audio": "data/audio/9.mp3"
     },
     {
       "frame": 1068,
       "bg": "data/bg/bg10.png",
-      "audio": null
+      "audio": "data/audio/10.mp3"
     },
     {
       "frame": 1174,
       "bg": "data/bg/bg11.png",
-      "audio": null
+      "audio": "data/audio/11.mp3"
     },
     {
       "frame": 1251,
       "bg": "data/bg/bg12.png",
-      "audio": null
+      "audio": "data/audio/12.mp3"
     },
     {
       "frame": 1308,
       "bg": "data/bg/bg13.png",
-      "audio": null
+      "audio": "data/audio/13.mp3"
     },
     {
       "frame": 1441,
       "bg": "data/bg/bg14.png",
-      "audio": null
+      "audio": "data/audio/14.mp3"
     },
     {
       "frame": 1666,
       "bg": "data/bg/bg15.png",
-      "audio": null
+      "audio": "data/audio/15.mp3"
     },
     {
       "frame": 1719,
       "bg": "data/bg/bg16.png",
-      "audio": null
+      "audio": "data/audio/16.mp3"
     },
     {
       "frame": 1778,
       "bg": "data/bg/bg17.png",
-      "audio": null
+      "audio": "data/audio/17.mp3"
     },
     {
       "frame": 1886,
       "bg": "data/bg/bg18.png",
-      "audio": null
+      "audio": "data/audio/18.mp3"
     },
     {
       "frame": 1942,
       "bg": "data/bg/bg19.png",
-      "audio": null
+      "audio": "data/audio/19.mp3"
     },
     {
       "frame": 2047,
       "bg": "data/bg/bg20.png",
-      "audio": null
+      "audio": "data/audio/20.mp3"
     },
     {
       "frame": 2164,
       "bg": "data/bg/bg21.png",
-      "audio": null
+      "audio": "data/audio/21.mp3"
     }
   ]
 }
